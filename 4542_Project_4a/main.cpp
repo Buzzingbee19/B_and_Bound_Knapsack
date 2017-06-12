@@ -20,14 +20,14 @@ using namespace std;
 struct Node
 {
 	int level, profit;
-	int bound;
+	int bounds;
 	float weight;
 };
 
 void exhaustiveKnapsack(knapsack& k, int time);
 void greedyKnapsack(knapsack& k, int time);
 void dynamicKnapsack(knapsack &k, int time);
-int bound(Node u, knapsack &k);
+int bound(Node &u, knapsack &k);
 
 int main()
 {
@@ -39,10 +39,10 @@ int main()
     // Read the name of the graph from the keyboard or
     // hard code it here for testing.
 
-    //fileName = "knapsack512.input";
+    fileName = "knapsack8.input";
 
-    cout << "Enter filename" << endl;
-    cin >> fileName;
+    //cout << "Enter filename" << endl;
+    //cin >> fileName;
 
     fin.open(fileName.c_str());
     if (!fin)
@@ -229,10 +229,10 @@ void dynamicKnapsack(knapsack& k, int time)
 
 	cout << "Sort" << endl;
 	sort(k.items.begin(), k.items.end()); //sorts struct in decending order
-	/*for (int l = 0; l < size; l++)
+	for (int l = 0; l < size; l++)
 	{
 	cout << "index: "<<  k.items[l].index << " CD: " << k.items[l].costdensity << endl;
-	}*/
+	}
 
 	queue<Node> Q;
 	Node u, v;
@@ -247,13 +247,18 @@ void dynamicKnapsack(knapsack& k, int time)
 		u = Q.front();
 		Q.pop();
 
+		cout << "level: "<< u.level << endl;
+
 		// If it is starting node, assign level 0
 		if (u.level == -1)
 			v.level = 0;
 
 		// If there is nothing on next level
-		if (u.level == k.getNumObjects() - 1)
+		if (u.level == k.getNumObjects()-1)
+		{
+			cout << "cont" << endl;
 			continue;
+		}
 
 		v.level = u.level + 1;
 
@@ -262,35 +267,39 @@ void dynamicKnapsack(knapsack& k, int time)
 
 		if (v.weight <= k.getCostLimit() && v.profit > maxProfit)
 		{
-			k.select(k.items[v.level].index);
 			maxProfit = v.profit;
+			cout << " v level " << v.level << endl;
+			cout << "v weight " << v.weight << endl; 
+			k.select(k.items[v.level].index);
+			cout << " MaxProfit: " << maxProfit << endl;
+			cout << " u level: " << u.level << endl;
+			cout << "index: " << k.items[v.level].index << endl;
 		}
 
-		v.bound = bound(v, k);
+		v.bounds = bound(v, k);
 
-		if (v.bound > maxProfit)
+		if (v.bounds > maxProfit)
+		{
+			cout << "bound1: " << v.bounds << endl;
 			Q.push(v);
+		}
 
 		v.weight = u.weight;
 		v.profit = u.profit;
-		v.bound = bound(v, k);
+		v.bounds = bound(v, k);
 
-		if (v.bound > maxProfit)
+		if (v.bounds > maxProfit)
+		{
+			cout << "bound2: " << v.bounds << endl;
 			Q.push(v);
-
+		}
 	}
 	
 	//something down here to save the list it creates
 
 	Node temp;
 	cout << maxProfit;
-	while (!Q.empty())
-	{
-		cout << "Print" << endl;
-		temp = Q.front();
-		cout << temp.level << endl;
-		Q.pop();
-	}
+	
 
 	int hold;
 	cin >> hold;
@@ -299,7 +308,7 @@ void dynamicKnapsack(knapsack& k, int time)
 	}
 
 
-int bound(Node u, knapsack &k)
+int bound(Node &u, knapsack &k)
 {
 	if (u.weight >= k.getCostLimit())
 		return 0; //if weight is over the limit
@@ -310,17 +319,17 @@ int bound(Node u, knapsack &k)
 
 	int totalweight = u.weight;
 
-	while ((j < k.getNumObjects()) && (totalweight + k.getCost(k.items[j].index) <= k.getCostLimit()))
+	while ((j < k.getNumObjects()) && ((totalweight + k.getCost(k.items[j].index)) <= k.getCostLimit()))
 	{
 		totalweight += k.getCost(k.items[j].index);
 		profit_bound += k.getValue(k.items[j].index);
 		j++;
 	}
 
+	//cout << "p" << profit_bound << endl;
+
 	if (j < k.getNumObjects())
-		profit_bound += (k.getCostLimit() - totalweight)*(k.getValue(k.items[j].index) / k.getCost(k.items[j].index));
+		profit_bound += (k.getCostLimit() - totalweight)*(k.items[j].costdensity);
 
 	return profit_bound;
-
-
 }

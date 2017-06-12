@@ -132,6 +132,9 @@
     <None Include="knapsack64.input" />
     <None Include="knapsack8.input" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="output1024.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
