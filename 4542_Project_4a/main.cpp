@@ -27,6 +27,7 @@ struct Node
 void exhaustiveKnapsack(knapsack& k, int time);
 void greedyKnapsack(knapsack& k, int time);
 void dynamicKnapsack(knapsack &k, int time);
+void dynamicKnapsack2(knapsack& k, int time);
 int bound(Node &u, knapsack &k);
 
 int main()
@@ -39,10 +40,10 @@ int main()
     // Read the name of the graph from the keyboard or
     // hard code it here for testing.
 
-    fileName = "knapsack8.input";
+    //fileName = "knapsack8.input";
 
-    //cout << "Enter filename" << endl;
-    //cin >> fileName;
+    cout << "Enter filename" << endl;
+    cin >> fileName;
 
     fin.open(fileName.c_str());
     if (!fin)
@@ -62,7 +63,7 @@ int main()
 
 
         cout << endl << "Best solution found" << endl;
-        k.printSolution();
+        k.printBound();
 
 
     }
@@ -215,7 +216,7 @@ void exhaustiveKnapsack(knapsack& k, int time)
    }
 }
 
-void dynamicKnapsack(knapsack& k, int time)
+void dynamicKnapsack(knapsack& k, int time) //returns an optimal upper bound for the knapsack
 {
 	clock_t timestart = clock(); //Set the start of the clock for timeout
 	clock_t timenow;
@@ -247,7 +248,8 @@ void dynamicKnapsack(knapsack& k, int time)
 		u = Q.front();
 		Q.pop();
 
-		cout << "level: "<< u.level << endl;
+
+		//cout << "level: "<< u.level << endl;
 
 		// If it is starting node, assign level 0
 		if (u.level == -1)
@@ -268,19 +270,18 @@ void dynamicKnapsack(knapsack& k, int time)
 		if (v.weight <= k.getCostLimit() && v.profit > maxProfit)
 		{
 			maxProfit = v.profit;
-			cout << " v level " << v.level << endl;
-			cout << "v weight " << v.weight << endl; 
-			k.select(k.items[v.level].index);
-			cout << " MaxProfit: " << maxProfit << endl;
-			cout << " u level: " << u.level << endl;
-			cout << "index: " << k.items[v.level].index << endl;
+			cout << "Minweight: " << v.weight << endl; 
+			cout << "MaxProfit: " << maxProfit << endl;
+			k.ValueBound = maxProfit;
+			k.CostBound = v.weight;
+
 		}
 
 		v.bounds = bound(v, k);
 
 		if (v.bounds > maxProfit)
 		{
-			cout << "bound1: " << v.bounds << endl;
+			//cout << "bound1: " << v.bounds << endl;
 			Q.push(v);
 		}
 
@@ -290,25 +291,75 @@ void dynamicKnapsack(knapsack& k, int time)
 
 		if (v.bounds > maxProfit)
 		{
-			cout << "bound2: " << v.bounds << endl;
+			//cout << "bound2: " << v.bounds << endl;
 			Q.push(v);
 		}
 	}
 	
 	//something down here to save the list it creates
-
-	Node temp;
-	cout << maxProfit;
 	
 
-	int hold;
-	cin >> hold;
+	//int hold;
+	//cin >> hold;
 
 
 	}
 
+void dynamicKnapsack2(knapsack& k, int time) //ignore this
+{
+	clock_t timestart = clock(); //Set the start of the clock for timeout
+	clock_t timenow;
+	int timeelapsed = 0, tempcost = 0, tempvalue = 0, maxProfit = 0;
+	int size = k.getNumObjects();
+	vector<bool> tempstring, bestobject; //Strings to hold
+										 //the current and best forms of packing the stack
+										 //vector<double>costdensity;
+	tempstring.resize(size);
+	bestobject.resize(size);
 
-int bound(Node &u, knapsack &k)
+	cout << "Sort" << endl;
+	sort(k.items.begin(), k.items.end()); //sorts struct in decending order
+	for (int l = 0; l < size; l++)
+	{
+		cout << "index: " << k.items[l].index << " CD: " << k.items[l].costdensity << endl;
+	}
+
+	double optimistic = k.items[0].costdensity*k.getCostLimit();
+	double current = 0;
+	double cost = 0;
+	double costleft = k.getCostLimit();
+
+	for (int x = 0; x < k.getNumObjects(); x++)
+	{
+		cout << "loop: " << x << endl;
+
+		if (x + 1 == size)
+		{
+			continue;
+		}
+
+		double bound1 = k.getValue(k.items[x].index) + k.items[x+1].costdensity*(costleft - k.getCost(k.items[x].index));
+		cout << "b1 " << bound1 << endl;
+		double bound2 = k.items[x + 1].costdensity*(costleft);
+		cout << "b2 " << bound2 << endl;
+
+		double possiblecost = k.getCost(k.items[x].index);
+
+			if ((current + bound1 > current + bound2) && (cost + possiblecost < k.getCostLimit()))
+			{
+				k.select(k.items[x].index);
+				cost = cost + possiblecost;
+				current = current + k.getValue(k.items[x].index);
+				costleft = costleft - k.getCost(k.items[x].index);
+			}
+	}
+
+	int h;
+	cin>>h;
+
+} //ignore this
+
+int bound(Node &u, knapsack &k) //gets upper bound
 {
 	if (u.weight >= k.getCostLimit())
 		return 0; //if weight is over the limit

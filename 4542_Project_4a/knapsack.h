@@ -16,6 +16,7 @@ public:
     int getNumObjects() const;
     int getCostLimit() const;
     void printSolution();
+	void printBound();
     void select(int);
     void unSelect(int);
     bool isSelected(int) const;
@@ -24,21 +25,19 @@ public:
     int totalValue;
     int totalCost;
 
+	int ValueBound;
+	int CostBound;
+
 	struct item
 	{
 
 		double costdensity;
 		int index;
-
-
 		bool operator < (const item& str) const
 
 		{
 			return (costdensity > str.costdensity);
 		}
-
-
-
 	};
 
 	vector<item> items;
@@ -210,6 +209,26 @@ void knapsack::printSolution()
    }
 
    cout << endl;
+}
+
+void knapsack::printBound()
+// Prints out the solution.
+{
+	ofstream myfile;
+	myfile.open("output32.txt");
+	cout << "------------------------------------------------" << endl;
+
+	cout << "Value Bound: " << ValueBound << endl;
+	cout << "Cost: " << CostBound << endl << endl;
+
+	myfile << "------------------------------------------------" << endl;
+
+	myfile << "Value Bound: " << ValueBound << endl;
+	myfile << "Cost: " << CostBound << endl;
+
+	myfile << "------------------------------------------------" << endl;
+
+	cout << endl;
 }
 
 ostream &operator<<(ostream &ostr, vector<bool> v)

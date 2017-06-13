@@ -75,5 +75,23 @@
     <Text Include="output1024.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="output8.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="output12.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="output16.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="output20.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="output28.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="output32.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
