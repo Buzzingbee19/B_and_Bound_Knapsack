@@ -33,6 +33,8 @@ public:
 
 		double costdensity;
 		int index;
+		int cost;
+		int value;
 		bool operator < (const item& str) const
 
 		{
@@ -82,6 +84,8 @@ knapsack::knapsack(ifstream &fin)
       index[i] = j;
 	  items[j].index = index[j];
 	  items[j].costdensity = costdensity[j];
+	  items[j].value = value[j];
+	  items[j].cost = cost[j];
       unSelect(j);
 
    }
