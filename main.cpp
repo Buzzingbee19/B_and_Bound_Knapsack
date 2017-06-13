@@ -21,40 +21,40 @@ void branchAndBound (knapsack& k);
 
 int main()
 {
-	char x;
-	ifstream fin;
-	stack <int> moves;
-	string fileName;
+    char x;
+    ifstream fin;
+    stack <int> moves;
+    string fileName;
 
-	// Read the name of the graph from the keyboard or
-	// hard code it here for testing.
+    // Read the name of the graph from the keyboard or
+    // hard code it here for testing.
 
-	fileName = "knapsack8.input";
+    fileName = "knapsack8.input";
 
-	fin.open(fileName.c_str());
-	if (!fin)
-	{
-		cerr << "Cannot open " << fileName << endl;
-		exit(1);
-	}
+    fin.open(fileName.c_str());
+    if (!fin)
+    {
+        cerr << "Cannot open " << fileName << endl;
+        exit(1);
+    }
 
-	try
-	{
-		cout << "Reading knapsack instance" << endl;
-		knapsack k(fin);
+    try
+    {
+       cout << "Reading knapsack instance" << endl;
+       knapsack k(fin);
 
 		cout << "test" << endl;
-		branchAndBound(k);
-	}
+		 branchAndBound(k);
+    }
 
-	catch (indexRangeError &ex)
-	{
-		cout << ex.what() << endl; exit(1);
-	}
-	catch (rangeError &ex)
-	{
-		cout << ex.what() << endl; exit(1);
-	}
+    catch (indexRangeError &ex)
+    {
+        cout << ex.what() << endl; exit(1);
+    }
+    catch (rangeError &ex)
+    {
+        cout << ex.what() << endl; exit(1);
+    }
 }
 
 int bound(int index, knapsack& k)
