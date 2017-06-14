@@ -1,12 +1,20 @@
 //Edward Patrick Willey and Patrick Buzza
 // Knapsack class
 // Version f08.1
-#include <iomanip>
+#include <iostream>
 #include <vector>
+#include <string>
+#include <iomanip>
+#include <fstream>
+#include <algorithm>
+
 using namespace std;
+
 class knapsack
 {
+
 public:
+
     knapsack(ifstream &fin);
     knapsack(const knapsack &);
     int getCost(int) const;
@@ -16,50 +24,52 @@ public:
     int getNumObjects() const;
     int getCostLimit() const;
     void printSolution();
-	void printBound();
     void select(int);
     void unSelect(int);
     bool isSelected(int) const;
     void sortWeighted();
     void sortOrder();
+	void setBound(int);
     int totalValue;
     int totalCost;
 
-	int ValueBound;
-	int CostBound;
+    int ValueBound;
+    int CostBound;
 
-	struct item
-	{
+    struct item
+    {
 
-		double costdensity;
-		int index;
-		int cost;
-		int value;
-		bool operator < (const item& str) const
+        double costdensity;
+        int index;
+        int cost;
+        int value;
+        bool operator < (const item& str) const
 
-		{
-			return (costdensity > str.costdensity);
-		}
-	};
+        {
+           return (costdensity > str.costdensity);
+        }
+    };
 
-	vector<item> items;
+    vector<item> items;
 
 
 
 private:
+
     int numObjects;
     int costLimit;
     vector<int> index;
     vector<int> value;
     vector<int> cost;
     vector<bool> selected;
-	vector<double> costdensity;
+    vector<double> costdensity;
 };
 
 knapsack::knapsack(ifstream &fin)
 // Construct a new knapsack instance using the data in fin.
 {
    int n, b, j, v, c;
+
 
    fin >> n;  // read the number of objects
    fin >> b;  // read the cost limit
@@ -80,16 +90,16 @@ knapsack::knapsack(ifstream &fin)
       value[j] = v;
       cost[j] = c;
       //costdensity[j] = (double)v/pow(c,2);
-	  costdensity[j] = (double)v / c;
+      costdensity[j] = (double)v / c;
       index[i] = j;
-	  items[j].index = index[j];
-	  items[j].costdensity = costdensity[j];
-	  items[j].value = value[j];
-	  items[j].cost = cost[j];
+      items[j].index = index[j];
+      items[j].costdensity = costdensity[j];
+      items[j].value = value[j];
+      items[j].cost = cost[j];
       unSelect(j);
 
    }
-
+   sort(items.begin(), items.end()); //sorts struct in descending order
    totalValue = 0;
    totalCost = 0;
 }
@@ -97,11 +107,14 @@ knapsack::knapsack(ifstream &fin)
 knapsack::knapsack(const knapsack &k)
 // Knapsack copy constructor.
 {
+	cout << "copy " << endl;
    int n = k.getNumObjects();
 
    value.resize(n);
    cost.resize(n);
    selected.resize(n);
+   items.resize(n);
+   index.resize(n);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
 
@@ -110,12 +123,18 @@ knapsack::knapsack(const knapsack &k)
 
    for (int i = 0; i < n; i++)
    {
+	   index[i] = i;
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
+	  items[i].index = k.items[i].index;
+	  items[i].costdensity = k.items[i].costdensity;
+	  items[i].value = k.items[i].value;
+	  items[i].cost = k.items[i].cost;
+
       if (k.isSelected(i))
-	 select(i);
+         select(i);
       else
-	 unSelect(i);
+         unSelect(i);
    }
 }
 
@@ -158,6 +177,10 @@ int knapsack::getValue() const
 {
    return totalValue;
 }
+void knapsack::setBound(int i)
+{
+	ValueBound = i;
+}
 
 ostream &operator<<(ostream &ostr, const knapsack &k)
 // Print all information about the knapsack.
@@ -189,7 +212,8 @@ void knapsack::printSolution()
 // Prints out the solution.
 {
    ofstream myfile;
-   myfile.open("output1024.txt");
+   myfile.open("output8.txt");
+
    cout << "------------------------------------------------" << endl;
 
    cout << "Total value: " << getValue() << endl;
@@ -213,26 +237,6 @@ void knapsack::printSolution()
    }
 
    cout << endl;
-}
-
-void knapsack::printBound()
-// Prints out the solution.
-{
-	ofstream myfile;
-	myfile.open("output32.txt");
-	cout << "------------------------------------------------" << endl;
-
-	cout << "Value Bound: " << ValueBound << endl;
-	cout << "Cost: " << CostBound << endl << endl;
-
-	myfile << "------------------------------------------------" << endl;
-
-	myfile << "Value Bound: " << ValueBound << endl;
-	myfile << "Cost: " << CostBound << endl;
-
-	myfile << "------------------------------------------------" << endl;
-
-	cout << endl;
 }
 
 ostream &operator<<(ostream &ostr, vector<bool> v)

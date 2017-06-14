@@ -2,33 +2,21 @@
 // Project 1a: Solving knapsack using exhaustive search
 //
 
-#include <iostream>
-#include <fstream>
-#include <queue>
-
-//test
-
-using namespace std;
-
 #include "d_except.h"
 #include "d_random.h"
 #include "knapsack.h"
 #include <cmath>
 #include <stack>
 #include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <deque>
 
-struct Node
-{
-	int level, profit;
-	int bounds;
-	float weight;
-};
 
-void exhaustiveKnapsack(knapsack& k, int time);
-void greedyKnapsack(knapsack& k, int time);
-void dynamicKnapsack(knapsack &k, int time);
-void dynamicKnapsack2(knapsack& k, int time);
-int bound(Node &u, knapsack &k);
+using namespace std;
+
+int bound(int index, knapsack& k);
+void branchAndBound (knapsack& k);
 
 int main()
 {
@@ -40,10 +28,7 @@ int main()
     // Read the name of the graph from the keyboard or
     // hard code it here for testing.
 
-    //fileName = "knapsack8.input";
-
-    cout << "Enter filename" << endl;
-    cin >> fileName;
+    fileName = "knapsack8.input";
 
     fin.open(fileName.c_str());
     if (!fin)
@@ -54,18 +39,11 @@ int main()
 
     try
     {
-        cout << "Reading knapsack instance" << endl;
-        knapsack k(fin);
+       cout << "Reading knapsack instance" << endl;
+       knapsack k(fin);
 
 		cout << "test" << endl;
-        //greedyKnapsack(k, 600);
-		dynamicKnapsack(k, 600);
-
-
-        cout << endl << "Best solution found" << endl;
-        k.printBound();
-
-
+		 branchAndBound(k);
     }
 
     catch (indexRangeError &ex)
@@ -78,309 +56,69 @@ int main()
     }
 }
 
-void greedyKnapsack(knapsack& k, int time)
+int bound(int index, knapsack& k)
 {
-	clock_t timestart = clock(); //Set the start of the clock for timeout
-	clock_t timenow;
-	int timeelapsed = 0, tempcost = 0, tempvalue = 0;
-	int size = k.getNumObjects();
-	vector<bool> tempstring, bestobject; //Strings to hold the current and best forms of packing the stack
-	//vector<double> costdensity;
-	tempstring.resize(size);
-	bestobject.resize(size);
-
-	cout << "Sort" << endl;
-	sort(k.items.begin(), k.items.end()); //sorts struct in decending order
-
-	/*for (int l = 0; l < size; l++)
+	int cost = k.getCostLimit() - k.totalCost;
+	int val = k.totalValue;
+	cout << "cost: " << cost << endl;
+	while (cost > 0)
 	{
-		cout << "index: "<<  k.items[l].index << " CD: " << k.items[l].costdensity << endl;
-	}*/
-
-	int j = 0;
-	bool done = false;
-
-	while( done != true && timeelapsed < time)  //as long as the list isnt over and the time isnt up
-	{
-
-		if (tempcost < k.getCostLimit()) //if the last added didnt go over the limit
-		{
-			k.select(k.items[j].index);
-
-			tempcost += k.getCost(k.items[j].index);
-			tempvalue += k.getValue(k.items[j].index);
-
-			j++; ///
+		if (cost < k.items[index].cost) {
+			val = val + cost * k.items[index].costdensity;
+			cost = 0;
 		}
-		else if(tempcost > k.getCostLimit()) //if the last added went over the limit remove it and move on
-		{
-			j--;
-
-			k.unSelect(k.items[j].index);
-		
-			j = j + 2;
+		else {
+			val = val + k.items[index].value;
+			cost = cost - k.items[index].cost;
 		}
-
-		if (j >= k.getNumObjects())
-		{
-			cout << "All objects checked" << endl;
-			done = true;
-		}
-
-		timenow = clock();
-		timeelapsed = (float)(timenow - timestart) / CLOCKS_PER_SEC;
-
-
+		index++;
 	}
-
-
-	
-}
-
-void exhaustiveKnapsack(knapsack& k, int time)
-{
-
-   //initialize all variables
-   clock_t timestart = clock(); //Set the start of the clock for timeout
-   clock_t timenow;
-   int size, bestcost, bestvalue = 0, tempcost, tempvalue, x, z;
-   randomNumber r;
-   size = k.getNumObjects();
-   vector<bool> tempstring, bestobject; //Strings to hold the current and best forms of packing the stack
-   tempstring.resize(size);
-   bestobject.resize(size);
-   float timeelapsed;
-   int temp = size-1;
- //  k.sortWeighted();
-
-   //loops through each possible combination of objects, checking their legality
-   for (int i = 0; i < pow(2,size); i++) {
-
-      //re-initializes variables for each attempted combo of objects
-      tempcost = 0;
-      tempvalue = 0;
-      z = temp;
-      x = i;
-
-      //converts the loop iteration ino a unique binary string, and selects
-      // those items.
-      while (x > 0)
-      {
-         if (x % 2)
-            k.select(z);
-         else
-            k.unSelect(z);
-         z--;
-         x=x/2;
-      }
-
-      //chooses the objects to be placed in the bag
-      for (int j = 0; j < size; j++) {
-         if (k.isSelected(j)) {
-            tempcost += k.getCost(j);
-            tempvalue += k.getValue(j);
-            tempstring[j] = true;
-         }
-         else
-            tempstring[j] = false;
-      }
-
-      // checks to determine if the set of objects is a legal set, and if it
-      // is the most valuable set to this point
-      if (tempcost <= k.getCostLimit() & tempvalue > bestvalue) {
-         bestvalue = tempvalue;
-         bestobject = tempstring;
-         bestcost = tempcost;
-      }
-
-      //updates the amount of time the function has taken
-      timenow = clock();
-      timeelapsed = (float)(timenow - timestart) / CLOCKS_PER_SEC;
-
-      //checks to see if the function has exceeded it's time limit or has
-      // checked every object pairing
-      if (timeelapsed >= time || i == pow(2,size)-1)
-      {
-         for (int l = 0; l < size; l++)
-         {
-            k.unSelect(l);
-            if (bestobject[l])
-               k.select(l);
-         }
-         //updates the knapsack's cost and value for the best case
-         k.totalValue = bestvalue;
-         k.totalCost = bestcost;
-  //       k.sortOrder();
-         return;
-      }
-   }
-}
-
-void dynamicKnapsack(knapsack& k, int time) //returns an optimal upper bound for the knapsack
-{
-	clock_t timestart = clock(); //Set the start of the clock for timeout
-	clock_t timenow;
-	int timeelapsed = 0, tempcost = 0, tempvalue = 0, maxProfit = 0;
-	int size = k.getNumObjects();
-	vector<bool> tempstring, bestobject; //Strings to hold
-	//the current and best forms of packing the stack
-	//vector<double>costdensity;
-	tempstring.resize(size);
-	bestobject.resize(size);
-
-	cout << "Sort" << endl;
-	sort(k.items.begin(), k.items.end()); //sorts struct in decending order
-	for (int l = 0; l < size; l++)
-	{
-	cout << "index: "<<  k.items[l].index << " CD: " << k.items[l].costdensity << endl;
-	}
-
-	queue<Node> Q;
-	Node u, v;
-
-	//dummy node
-	u.level = -1;
-	u.profit = u.weight = 0;
-	Q.push(u);
-
-	while (!Q.empty())
-	{
-		u = Q.front();
-		Q.pop();
-
-
-		//cout << "level: "<< u.level << endl;
-
-		// If it is starting node, assign level 0
-		if (u.level == -1)
-			v.level = 0;
-
-		// If there is nothing on next level
-		if (u.level == k.getNumObjects()-1)
-		{
-			cout << "cont" << endl;
-			continue;
-		}
-
-		v.level = u.level + 1;
-
-		v.weight = u.weight + k.getCost(k.items[v.level].index);
-		v.profit = u.profit + k.getValue(k.items[v.level].index);
-
-		if (v.weight <= k.getCostLimit() && v.profit > maxProfit)
-		{
-			maxProfit = v.profit;
-			cout << "Minweight: " << v.weight << endl; 
-			cout << "MaxProfit: " << maxProfit << endl;
-			k.ValueBound = maxProfit;
-			k.CostBound = v.weight;
-
-		}
-
-		v.bounds = bound(v, k);
-
-		if (v.bounds > maxProfit)
-		{
-			//cout << "bound1: " << v.bounds << endl;
-			Q.push(v);
-		}
-
-		v.weight = u.weight;
-		v.profit = u.profit;
-		v.bounds = bound(v, k);
-
-		if (v.bounds > maxProfit)
-		{
-			//cout << "bound2: " << v.bounds << endl;
-			Q.push(v);
-		}
-	}
-	
-	//something down here to save the list it creates
-	
-
-	//int hold;
-	//cin >> hold;
-
-
-	}
-
-void dynamicKnapsack2(knapsack& k, int time) //ignore this
-{
-	clock_t timestart = clock(); //Set the start of the clock for timeout
-	clock_t timenow;
-	int timeelapsed = 0, tempcost = 0, tempvalue = 0, maxProfit = 0;
-	int size = k.getNumObjects();
-	vector<bool> tempstring, bestobject; //Strings to hold
-										 //the current and best forms of packing the stack
-										 //vector<double>costdensity;
-	tempstring.resize(size);
-	bestobject.resize(size);
-
-	cout << "Sort" << endl;
-	sort(k.items.begin(), k.items.end()); //sorts struct in decending order
-	for (int l = 0; l < size; l++)
-	{
-		cout << "index: " << k.items[l].index << " CD: " << k.items[l].costdensity << endl;
-	}
-
-	double optimistic = k.items[0].costdensity*k.getCostLimit();
-	double current = 0;
-	double cost = 0;
-	double costleft = k.getCostLimit();
-
-	for (int x = 0; x < k.getNumObjects(); x++)
-	{
-		cout << "loop: " << x << endl;
-
-		if (x + 1 == size)
-		{
-			continue;
-		}
-
-		double bound1 = k.getValue(k.items[x].index) + k.items[x+1].costdensity*(costleft - k.getCost(k.items[x].index));
-		cout << "b1 " << bound1 << endl;
-		double bound2 = k.items[x + 1].costdensity*(costleft);
-		cout << "b2 " << bound2 << endl;
-
-		double possiblecost = k.getCost(k.items[x].index);
-
-			if ((current + bound1 > current + bound2) && (cost + possiblecost < k.getCostLimit()))
-			{
-				k.select(k.items[x].index);
-				cost = cost + possiblecost;
-				current = current + k.getValue(k.items[x].index);
-				costleft = costleft - k.getCost(k.items[x].index);
-			}
-	}
-
+	cout << "val: " << val << endl;
 	int h;
-	cin>>h;
+	cin >> h;
+	return val;
+}
 
-} //ignore this
-
-int bound(Node &u, knapsack &k) //gets upper bound
+void branchAndBound (knapsack& k)
 {
-	if (u.weight >= k.getCostLimit())
-		return 0; //if weight is over the limit
+	clock_t timestart = clock(); //Set the start of the clock for timeout
+	clock_t timenow;
+	int timeelapsed = 0, tempcost = 0, tempvalue = 0, maxProfit = 0;
+	int size = k.getNumObjects();
+	int bnd, ind = 0, Z, bestZ = 0;
+	vector<bool> bestobject; //Strings to hold
+	bestobject.resize(size);
+	int h;
+	deque <knapsack> d;
+	d.push_back(k);
 
-	int profit_bound = u.profit;
-
-	int j = u.level + 1;
-
-	int totalweight = u.weight;
-
-	while ((j < k.getNumObjects()) && ((totalweight + k.getCost(k.items[j].index)) <= k.getCostLimit()))
+	cout << "Start" << endl;
+	cin >> h;
+	while (!d.empty())
 	{
-		totalweight += k.getCost(k.items[j].index);
-		profit_bound += k.getValue(k.items[j].index);
-		j++;
+		bnd = bound(ind, d.front());
+		k.setBound(bnd);
+		knapsack newkap(d.front());
+		Z = newkap.getValue();
+		if (Z > bestZ) {
+			bestZ = Z;
+			knapsack bestest(newkap);
+			bestest.printSolution();
+			cout << "ind: " << ind << endl;
+			cin >> h;
+		}
+		if (bnd > bestZ)
+		{
+			d.push_back(newkap);
+			if (newkap.totalCost + newkap.items[ind].cost < newkap.getCostLimit()) {
+				newkap.select(ind);
+				d.push_back(newkap);
+			}
+		}
+		d.pop_front();
 	}
 
-	//cout << "p" << profit_bound << endl;
+	cout << "Best solution found" << endl;
+	//bestest.printSolution();
 
-	if (j < k.getNumObjects())
-		profit_bound += (k.getCostLimit() - totalweight)*(k.items[j].costdensity);
-
-	return profit_bound;
 }
