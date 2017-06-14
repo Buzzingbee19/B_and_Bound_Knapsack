@@ -23,15 +23,16 @@ public:
     int getValue() const;
     int getNumObjects() const;
     int getCostLimit() const;
-    void printSolution();
+    void printSolution(string myfile);
     void select(int);
     void unSelect(int);
     bool isSelected(int) const;
     void sortWeighted();
     void sortOrder();
-	void setBound(int);
+    void setBound(int);
     int totalValue;
     int totalCost;
+    int Check();
 
     int ValueBound;
     int CostBound;
@@ -43,8 +44,8 @@ public:
         int index;
         int cost;
         int value;
+        bool checked;
         bool operator < (const item& str) const
-
         {
            return (costdensity > str.costdensity);
         }
@@ -55,7 +56,6 @@ public:
 
 
 private:
-
     int numObjects;
     int costLimit;
     vector<int> index;
@@ -89,13 +89,13 @@ knapsack::knapsack(ifstream &fin)
       fin >> j >> v >> c;
       value[j] = v;
       cost[j] = c;
-      //costdensity[j] = (double)v/pow(c,2);
       costdensity[j] = (double)v / c;
       index[i] = j;
       items[j].index = index[j];
       items[j].costdensity = costdensity[j];
       items[j].value = value[j];
       items[j].cost = cost[j];
+      items[j].checked = false;
       unSelect(j);
 
    }
@@ -107,7 +107,6 @@ knapsack::knapsack(ifstream &fin)
 knapsack::knapsack(const knapsack &k)
 // Knapsack copy constructor.
 {
-	cout << "copy " << endl;
    int n = k.getNumObjects();
 
    value.resize(n);
@@ -123,13 +122,15 @@ knapsack::knapsack(const knapsack &k)
 
    for (int i = 0; i < n; i++)
    {
-	   index[i] = i;
+      index[i] = i;
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
-	  items[i].index = k.items[i].index;
-	  items[i].costdensity = k.items[i].costdensity;
-	  items[i].value = k.items[i].value;
-	  items[i].cost = k.items[i].cost;
+      items[i].index = k.items[i].index;
+      items[i].costdensity = k.items[i].costdensity;
+      items[i].value = k.items[i].value;
+      items[i].cost = k.items[i].cost;
+      items[i].checked = k.items[i].checked;
+
 
       if (k.isSelected(i))
          select(i);
@@ -179,7 +180,7 @@ int knapsack::getValue() const
 }
 void knapsack::setBound(int i)
 {
-	ValueBound = i;
+   ValueBound = i;
 }
 
 ostream &operator<<(ostream &ostr, const knapsack &k)
@@ -208,16 +209,18 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
    return ostr;
 }
 
-void knapsack::printSolution()
+void knapsack::printSolution(string file)
 // Prints out the solution.
 {
+   string output = ".output";
    ofstream myfile;
-   myfile.open("output8.txt");
+   file = file + output;
+   myfile.open(file.c_str());
 
-   cout << "------------------------------------------------" << endl;
+   //cout << "------------------------------------------------" << endl;
 
-   cout << "Total value: " << getValue() << endl;
-   cout << "Total cost: " << getCost() << endl << endl;
+   //cout << "Total value: " << getValue() << endl;
+   //cout << "Total cost: " << getCost() << endl << endl;
 
    myfile << "------------------------------------------------" << endl;
 
@@ -229,14 +232,12 @@ void knapsack::printSolution()
 
       if (isSelected(i)){
 
-         cout << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
+         //cout << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
          myfile << index[i] << "  " << getValue(i) << " " << getCost(i) << endl;
 
       }
 
    }
-
-   cout << endl;
 }
 
 ostream &operator<<(ostream &ostr, vector<bool> v)
@@ -315,4 +316,14 @@ void knapsack::sortOrder()
          }
       }
    }
+}
+
+int knapsack::Check() {
+   int i = 0;
+   while(this->items[i].checked)
+   {
+      i++;
+   }
+   this->items[i].checked = true;
+   return i;
 }
