@@ -29,13 +29,14 @@ public:
     bool isSelected(int) const;
     void sortWeighted();
     void sortOrder();
-	void setBound(int);
+    int getBound() const;
+    void setBound(int);
     int totalValue;
     int totalCost;
     int Check();
 
     int ValueBound;
-    int CostBound;
+
 
     struct item
     {
@@ -116,7 +117,7 @@ knapsack::knapsack(const knapsack &k)
    index.resize(n);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
-
+   ValueBound = k.getBound();
    totalCost = 0;
    totalValue = 0;
 
@@ -183,6 +184,11 @@ void knapsack::setBound(int i)
 	ValueBound = i;
 }
 
+int knapsack::getBound() const {
+   return ValueBound;
+}
+
+
 ostream &operator<<(ostream &ostr, const knapsack &k)
 // Print all information about the knapsack.
 {
@@ -225,7 +231,8 @@ void knapsack::printSolution(string file)
    myfile << "------------------------------------------------" << endl;
 
    myfile << "Total value: " << getValue() << endl;
-   myfile << "Total cost: " << getCost() << endl << endl;
+   myfile << "Total cost: " << getCost() << endl;
+   myfile << "Upper bound: " << getBound() << endl << endl;
 
    // Print out objects in the solution
    for (int i = 0; i < getNumObjects(); i++){
@@ -324,6 +331,10 @@ int knapsack::Check() {
    {
       i++;
    }
-   this->items[i].checked = true;
+   if (i >= this->numObjects)
+      return this->numObjects;
+   else
+      this->items[i].checked = true;
    return i;
 }
+

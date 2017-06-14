@@ -86,19 +86,20 @@ void branchAndBound (knapsack& k, string myfile)
 
 	while (!d.empty() || timeelapsed < time)
 	{
-		bnd = bound(ind, d.front());
 		knapsack newkap(d.front());
 		ind = newkap.Check();
 		if (ind >= size)
 			break;
-		newkap.setBound(bnd);
+      bnd = bound(ind, newkap);
+      newkap.setBound(bnd);
 		Z = newkap.getValue();
 		if (Z > bestZ) {
 			bestZ = Z;
 			knapsack bestest(newkap);
+         bestest.setBound(bnd);
 			bestest.printSolution(myfile);
 		}
-		if (bnd > bestZ || ind+1 < size)
+		if (bnd > bestZ)
 		{
 			d.push_back(newkap);
 			if (newkap.totalCost + newkap.items[ind].cost < newkap.getCostLimit()) {
