@@ -10,13 +10,13 @@
 
 using namespace std;
 
-int bound(int index, knapsack& k);
+int bound(int index, knapsack k);
 void branchAndBound (knapsack& k, string myfile, int greedybound);
-int greedyKnapsack(knapsack k);
+int greedyKnapsack(knapsack k, string myfile);
 
 int main()
 {
-   int bound;
+	int bound;
 	char x;
 	ifstream fin;
 	stack <int> moves;
@@ -41,7 +41,7 @@ int main()
 	{
 		cout << "Reading knapsack instance" << endl;
 		knapsack k(fin);
-      bound = greedyKnapsack(k);
+		bound = greedyKnapsack(k, fileName);
 		branchAndBound(k, fileName, bound);
 	}
 
@@ -55,7 +55,7 @@ int main()
 	}
 }
 
-int bound(int index, knapsack& k)
+int bound(int index, knapsack k)
 {
 	int cost = k.getCostLimit() - k.getCost();
 	int val = k.getValue();
@@ -77,33 +77,33 @@ int bound(int index, knapsack& k)
 void branchAndBound (knapsack& k, string myfile, int greedybound)
 {
 	clock_t timestart = clock(), timenow; //Set the start of the clock for timeout
-	int time = 600, size = k.getNumObjects(), bnd, ind=0, Z, bestZ = greedybound;
+	int time = 10, size = k.getNumObjects(), bnd, ind=0, Z, bestZ = greedybound;
 	float timeelapsed = 0;
 	deque <knapsack> d;
 	d.push_back(k);
 
 	while (!d.empty() || timeelapsed < time)
 	{
-      knapsack *newknap = new knapsack (d.front());
+		knapsack *newknap = new knapsack (d.front());
 		ind = newknap->Check();
 		if (ind >= size)
 			break;
-      bnd = bound(ind, *newknap);
-      newknap->setBound(bnd);
+		bnd = bound(ind, *newknap);
+		newknap->setBound(bnd);
 		Z = newknap->getValue();
 		if (Z > bestZ) {
 			bestZ = Z;
-         knapsack *bestest = new knapsack(*newknap);
-         bestest->setBound(bnd);
+			knapsack *bestest = new knapsack(*newknap);
+			bestest->setBound(bnd);
 			bestest->printSolution(myfile);
-         delete bestest;
+			delete bestest;
 		}
 		if (bnd > bestZ)
 		{
 			d.push_back(*newknap);
 			if (newknap->getCost() + newknap->items[ind].cost <
-                 newknap->getCostLimit())
-         {
+				 newknap->getCostLimit())
+			{
 				newknap->select(newknap->items[ind].index);
 				d.push_back(*newknap);
 			}
@@ -111,35 +111,39 @@ void branchAndBound (knapsack& k, string myfile, int greedybound)
 		d.pop_front();
 		timenow = clock();
 		timeelapsed = (float)(timenow - timestart)/CLOCKS_PER_SEC;
-      delete newknap;
+		if (timeelapsed > time)
+			return;
+		delete newknap;
 	}
 
 	cout << "Best solution found" << endl;
 
 }
 
-int greedyKnapsack(knapsack k)
+int greedyKnapsack(knapsack k, string myfile)
 {
-   int tempcost = 0, tempvalue = 0, j = 0;
-   int size = k.getNumObjects();
-   cout << "Sort" << endl;
-   sort(k.items.begin(), k.items.end());
-   bool done = false;
+	int tempcost = 0, tempvalue = 0, j = 0;
+	int size = k.getNumObjects();
+	cout << "Sort" << endl;
+	sort(k.items.begin(), k.items.end());
+	bool done = false;
 
-   while( done != true)
-   {
-      if (tempcost + k.getCost(k.items[j].index) < k.getCostLimit())
-      {
-         k.select(k.items[j].index);
-         tempcost += k.getCost(k.items[j].index);
-         tempvalue += k.getValue(k.items[j].index);
-         j++;
-      }
-      else
-      {
-         cout << "Cannot add any more items" << endl;
-         done = true;
-      }
-   }
-   return tempvalue;
+	while( done != true)
+	{
+		if (tempcost + k.getCost(k.items[j].index) < k.getCostLimit())
+		{
+			k.select(k.items[j].index);
+			tempcost += k.getCost(k.items[j].index);
+			tempvalue += k.getValue(k.items[j].index);
+			j++;
+		}
+		else
+		{
+			cout << "Cannot add any more items" << endl;
+			done = true;
+		}
+	}
+	k.setBound(tempvalue);
+	k.printSolution(myfile);
+	return tempvalue;
 }

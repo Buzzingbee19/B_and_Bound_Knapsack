@@ -10,9 +10,9 @@
 
 using namespace std;
 
-int bound(int index, knapsack& k);
+int bound(int index, knapsack k);
 void branchAndBound (knapsack& k, string myfile, int greedybound);
-int greedyKnapsack(knapsack k);
+int greedyKnapsack(knapsack k, string myfile);
 
 int main()
 {
@@ -41,7 +41,7 @@ int main()
 	{
 		cout << "Reading knapsack instance" << endl;
 		knapsack k(fin);
-      bound = greedyKnapsack(k);
+      bound = greedyKnapsack(k, fileName);
 		branchAndBound(k, fileName, bound);
 	}
 
@@ -55,7 +55,7 @@ int main()
 	}
 }
 
-int bound(int index, knapsack& k)
+int bound(int index, knapsack k)
 {
 	int cost = k.getCostLimit() - k.getCost();
 	int val = k.getValue();
@@ -77,7 +77,7 @@ int bound(int index, knapsack& k)
 void branchAndBound (knapsack& k, string myfile, int greedybound)
 {
 	clock_t timestart = clock(), timenow; //Set the start of the clock for timeout
-	int time = 600, size = k.getNumObjects(), bnd, ind=0, Z, bestZ = greedybound;
+	int time = 10, size = k.getNumObjects(), bnd, ind=0, Z, bestZ = greedybound;
 	float timeelapsed = 0;
 	deque <knapsack> d;
 	d.push_back(k);
@@ -111,6 +111,8 @@ void branchAndBound (knapsack& k, string myfile, int greedybound)
 		d.pop_front();
 		timenow = clock();
 		timeelapsed = (float)(timenow - timestart)/CLOCKS_PER_SEC;
+      if (timeelapsed > time)
+         return;
       delete newknap;
 	}
 
@@ -118,7 +120,7 @@ void branchAndBound (knapsack& k, string myfile, int greedybound)
 
 }
 
-int greedyKnapsack(knapsack k)
+int greedyKnapsack(knapsack k, string myfile)
 {
    int tempcost = 0, tempvalue = 0, j = 0;
    int size = k.getNumObjects();
@@ -141,5 +143,7 @@ int greedyKnapsack(knapsack k)
          done = true;
       }
    }
+   k.setBound(tempvalue);
+   k.printSolution(myfile);
    return tempvalue;
 }
