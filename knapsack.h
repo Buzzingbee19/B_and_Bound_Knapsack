@@ -12,35 +12,27 @@ using namespace std;
 
 class knapsack
 {
-
 public:
-
     knapsack(ifstream &fin);
     knapsack(const knapsack &);
-    int getCost(int) const;
-    int getValue(int) const;
-    int getCost() const;
-    int getValue() const;
-    int getNumObjects() const;
-    int getCostLimit() const;
+    ~knapsack();
     void printSolution(string myfile);
     void select(int);
     void unSelect(int);
-    bool isSelected(int) const;
+    void setBound(int);
     void sortWeighted();
     void sortOrder();
+    int getCost() const;
+    int getCost(int) const;
+    int getValue() const;
+    int getValue(int) const;
+    int getNumObjects() const;
+    int getCostLimit() const;
     int getBound() const;
-    void setBound(int);
-    int totalValue;
-    int totalCost;
     int Check();
-
-    int ValueBound;
-
-
+    bool isSelected(int) const;
     struct item
     {
-
         double costdensity;
         int index;
         int cost;
@@ -51,14 +43,14 @@ public:
            return (costdensity > str.costdensity);
         }
     };
-
     vector<item> items;
 
-
-
 private:
+    int totalValue;
+    int totalCost;
     int numObjects;
     int costLimit;
+    int ValueBound;
     vector<int> index;
     vector<int> value;
     vector<int> cost;
@@ -138,6 +130,12 @@ knapsack::knapsack(const knapsack &k)
       else
          unSelect(i);
    }
+}
+
+knapsack::~knapsack()
+// Knapsack copy constructor.
+{
+
 }
 
 int knapsack::getNumObjects() const
@@ -337,4 +335,3 @@ int knapsack::Check() {
       this->items[i].checked = true;
    return i;
 }
-

@@ -12,34 +12,27 @@ using namespace std;
 
 class knapsack
 {
-
 public:
-
     knapsack(ifstream &fin);
     knapsack(const knapsack &);
-    int getCost(int) const;
-    int getValue(int) const;
-    int getCost() const;
-    int getValue() const;
-    int getNumObjects() const;
-    int getCostLimit() const;
+    ~knapsack();
     void printSolution(string myfile);
     void select(int);
     void unSelect(int);
-    bool isSelected(int) const;
+    void setBound(int);
     void sortWeighted();
     void sortOrder();
-    void setBound(int);
-    int totalValue;
-    int totalCost;
+    int getCost() const;
+    int getCost(int) const;
+    int getValue() const;
+    int getValue(int) const;
+    int getNumObjects() const;
+    int getCostLimit() const;
+    int getBound() const;
     int Check();
-
-    int ValueBound;
-    int CostBound;
-
+    bool isSelected(int) const;
     struct item
     {
-
         double costdensity;
         int index;
         int cost;
@@ -50,14 +43,14 @@ public:
            return (costdensity > str.costdensity);
         }
     };
-
     vector<item> items;
 
-
-
 private:
+    int totalValue;
+    int totalCost;
     int numObjects;
     int costLimit;
+    int ValueBound;
     vector<int> index;
     vector<int> value;
     vector<int> cost;
@@ -116,19 +109,19 @@ knapsack::knapsack(const knapsack &k)
    index.resize(n);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
-
+   ValueBound = k.getBound();
    totalCost = 0;
    totalValue = 0;
 
    for (int i = 0; i < n; i++)
    {
-      index[i] = i;
+	   index[i] = i;
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
-      items[i].index = k.items[i].index;
-      items[i].costdensity = k.items[i].costdensity;
-      items[i].value = k.items[i].value;
-      items[i].cost = k.items[i].cost;
+	  items[i].index = k.items[i].index;
+	  items[i].costdensity = k.items[i].costdensity;
+	  items[i].value = k.items[i].value;
+	  items[i].cost = k.items[i].cost;
       items[i].checked = k.items[i].checked;
 
 
@@ -137,6 +130,12 @@ knapsack::knapsack(const knapsack &k)
       else
          unSelect(i);
    }
+}
+
+knapsack::~knapsack()
+// Knapsack copy constructor.
+{
+
 }
 
 int knapsack::getNumObjects() const
@@ -178,9 +177,13 @@ int knapsack::getValue() const
 {
    return totalValue;
 }
-void knapsack::setBound(int i)
-{
-   ValueBound = i;
+
+void knapsack::setBound(int i) {
+	ValueBound = i;
+}
+
+int knapsack::getBound() const {
+   return ValueBound;
 }
 
 ostream &operator<<(ostream &ostr, const knapsack &k)
@@ -225,7 +228,8 @@ void knapsack::printSolution(string file)
    myfile << "------------------------------------------------" << endl;
 
    myfile << "Total value: " << getValue() << endl;
-   myfile << "Total cost: " << getCost() << endl << endl;
+   myfile << "Total cost: " << getCost() << endl;
+   myfile << "Upper bound: " << getBound() << endl << endl;
 
    // Print out objects in the solution
    for (int i = 0; i < getNumObjects(); i++){
@@ -303,7 +307,7 @@ void knapsack::sortWeighted()
 }
 
 void knapsack::sortOrder()
-//sorts knapsack objecs back to originally passed order
+//sorts knapsack objects back to originally passed order
 {
    for (int i = (numObjects - 1); i >= 0; i--) {
       for (int j = (numObjects - 1); j >= 0; j--) {
@@ -324,6 +328,9 @@ int knapsack::Check() {
    {
       i++;
    }
-   this->items[i].checked = true;
+   if (i >= this->numObjects)
+      return this->numObjects;
+   else
+      this->items[i].checked = true;
    return i;
 }
